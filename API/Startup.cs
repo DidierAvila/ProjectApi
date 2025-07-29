@@ -1,16 +1,20 @@
-﻿using Business;
+﻿using API.Extensions;
+using Business.Customers.Mappings;
+using Business.Customers.Validators;
+using Business.Posts.Mappings;
 using DataAccess;
-using DataAccess.Data;
+using DataAccess.DbContexts;
+using Domain.Validator;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 
-namespace ProjectAPI.API
+namespace API
 {
     public class Startup
     {
@@ -21,23 +25,21 @@ namespace ProjectAPI.API
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //Servicios                      
-            services.AddScoped<JujuTestContext, JujuTestContext>();
-            services.AddScoped<BaseService<Customer>, BaseService<Customer>>();
-            services.AddScoped<BaseModel<Customer>, BaseModel<Customer>>();
-            services.AddScoped<BaseService<Post>, BaseService<Post>>();            
-            services.AddScoped<BaseModel<Post>, BaseModel<Post>>();
-
-            //Agregar cadena de conexion al contexto
+            services.AddApiExtention();
+            services.AddDataAccesExtention();
             services.AddDbContext<JujuTestContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("Development")));
+            
+            services.AddControllers()
+                .AddFluentValidation(fv => 
+                {
+                    fv.RegisterValidatorsFromAssemblyContaining<CustomerValidator>();
+                    fv.RegisterValidatorsFromAssemblyContaining<CreateCustomerCommandValidator>();
+                    fv.DisableDataAnnotationsValidation = true;
+                });
 
-            services.AddControllers();
-
-            // ======== CONFIGURACIÓN DE SWAGGER =========
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TestAPI", Version = "v1" });
@@ -45,37 +47,34 @@ namespace ProjectAPI.API
             services.AddHttpContextAccessor();
             services.AddDistributedMemoryCache();
             services.AddSession();
+            services.AddAutoMapper(typeof(CustomerMappingProfile), typeof(PostMappingProfile));
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseRequestLogging();
+            app.UseExceptionHandling();
+            
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            // ======== CONFIGURACIÓN DE SWAGGER =========
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                string swaggerJsonBasePath = string.IsNullOrWhiteSpace(c.RoutePrefix) ? "." : "..";
-                c.SwaggerEndpoint($"{swaggerJsonBasePath}/swagger/v1/swagger.json", "TestAPI v1");
-            });
+            app.UseHttpsRedirection();
 
-            app.UseCors(options => options
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader());
-
-            app.UseAuthentication();
-
-            app.UseSession();
-            
             app.UseRouting();
+
+            app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "TestAPI V1");
             });
         }
     }

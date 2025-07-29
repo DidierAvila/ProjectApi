@@ -1,50 +1,98 @@
-﻿using Business;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Business.Customers.Commands;
+using Business.Customers.Queries;
+using Domain.Dtos;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Linq;
-using CustomerEntity = DataAccess.Data.Customer;
 
 namespace API.Controllers.Customer
 {
     [Route("[controller]")]
     public class CustomerController : ControllerBase
     {
-        private BaseService<CustomerEntity> CustomerService;
-        public CustomerController(BaseService<CustomerEntity> customerService)
-        {
-            CustomerService = customerService;
-        }
+        private readonly IMediator _mediator;
 
+        public CustomerController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
 
         [HttpGet()]
-        public IQueryable<CustomerEntity> GetAll()
+        public async Task<ActionResult<IEnumerable<CustomerDto>>> GetAll()
         {
-            return CustomerService.GetAll();
+            var query = new GetAllCustomersQuery();
+            var customers = await _mediator.Send(query);
+            return Ok(customers);
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult<CustomerDto>> GetById(int id)
+        {
+            var query = new GetCustomerByIdQuery { CustomerId = id };
+            var customer = await _mediator.Send(query);
+
+            if (customer == null)
+            {
+                return NotFound($"No se encontró el cliente con ID {id}");
+            }
+
+            return Ok(customer);
+        }
 
         [HttpPost()]
-        public CustomerEntity Create([FromBodyAttribute] CustomerEntity entity)
+        public async Task<ActionResult<CustomerDto>> Create([FromBody] CreateCustomerDto createDto)
         {
-            return CreateCustomer(entity);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var command = new CreateCustomerCommand
+            {
+                Name = createDto.Name
+            };
+            var createdCustomer = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetById), new { id = createdCustomer.CustomerId }, createdCustomer);
         }
 
-        private CustomerEntity CreateCustomer(CustomerEntity entity)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<CustomerDto>> Update(int id, [FromBody] UpdateCustomerDto updateDto)
         {
-            throw new Exception("");
-            return CustomerService.Create(entity);
+            if (id != updateDto.CustomerId)
+            {
+                return BadRequest("El ID de la URL no coincide con el ID del cliente");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var command = new UpdateCustomerCommand
+            {
+                CustomerId = updateDto.CustomerId,
+                Name = updateDto.Name
+            };
+            var updatedCustomer = await _mediator.Send(command);
+            return Ok(updatedCustomer);
         }
 
-        [HttpPut()]
-        public CustomerEntity Update(CustomerEntity entity)
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id)
         {
-            return CustomerService.Update(entity.CustomerId, entity, out bool changed);
+            var command = new DeleteCustomerCommand { CustomerId = id };
+            await _mediator.Send(command);
+            return NoContent();
         }
 
-        [HttpDelete()]
-        public CustomerEntity Delete([FromBodyAttribute] CustomerEntity entity)
+        [HttpGet("{id}/posts")]
+        public async Task<ActionResult<IEnumerable<PostDto>>> GetCustomerPosts(int id)
         {
-            return CustomerService.Delete(entity);
+            var query = new GetCustomerPostsQuery { CustomerId = id };
+            var posts = await _mediator.Send(query);
+            return Ok(posts);
         }
     }
 }

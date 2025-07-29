@@ -7,8 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="11.8.1" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.8.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Dtos\" />
-    <Folder Include="Enums\" />
     <Folder Include="Validator\" />
   </ItemGroup>
 
