@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities
 {
-    [Table(name: "Post")]
+    [Table(name: "Logs")]
     public partial class Logs
     {
         [Key]
