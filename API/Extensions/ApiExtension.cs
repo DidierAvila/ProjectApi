@@ -1,4 +1,5 @@
 ﻿using Business.Customers.Queries;
+using Business.Logs;
 using Business.Posts.Queries;
 using Business.Security;
 using DataAccess.Repositories;
@@ -22,8 +23,10 @@ namespace API.Extensions
             services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(GetPostsByCustomerIdQuery).Assembly));
 
             services.AddScoped<ISecurityService, SecurityService>();
+            services.AddScoped<ILogService, LogService>();
             services.AddScoped<IRepositoryBase<Token>, RepositoryBase<Token>>();
             services.AddScoped<IRepositoryBase<User>, RepositoryBase<User>>();
+            services.AddScoped<IRepositoryBase<Logs>, RepositoryBase<Logs>>();
 
             return services;
         }

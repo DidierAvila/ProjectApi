@@ -57,6 +57,10 @@ namespace API.Controllers.Customer
                 Name = createDto.Name
             };
             var createdCustomer = await _mediator.Send(command);
+            if (!string.IsNullOrEmpty(createdCustomer.Messages))
+            {
+                return BadRequest(createdCustomer.Messages);
+            }
             return CreatedAtAction(nameof(GetById), new { id = createdCustomer.CustomerId }, createdCustomer);
         }
 
@@ -80,6 +84,10 @@ namespace API.Controllers.Customer
                 Name = updateDto.Name
             };
             var updatedCustomer = await _mediator.Send(command);
+            if (!string.IsNullOrEmpty(updatedCustomer.Messages))
+            {
+                return BadRequest(updatedCustomer.Messages);
+            }
             return Ok(updatedCustomer);
         }
 
@@ -88,7 +96,11 @@ namespace API.Controllers.Customer
         public async Task<ActionResult> Delete(int id)
         {
             var command = new DeleteCustomerCommand { CustomerId = id };
-            await _mediator.Send(command);
+            var result = await _mediator.Send(command);
+            if (!string.IsNullOrEmpty(result.Messages))
+            {
+                return BadRequest(result.Messages);
+            }
             return NoContent();
         }
 

@@ -1,9 +1,7 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using AutoMapper;
 using Business.Common;
 using Business.Customers.Commands;
+using Business.Logs;
 using DataAccess.Repositories;
 using Domain.Dtos;
 using MediatR;
@@ -16,15 +14,18 @@ namespace Business.Customers.Handlers
         private readonly ICustomerRepositoy _customerRepositoy;
         private readonly IMapper _mapper;
         private readonly ILogger<CreateCustomerCommandHandler> _logger;
-
+        private readonly ILogService _logService;
+        
         public CreateCustomerCommandHandler(
             ICustomerRepositoy customerRepositoy, 
             IMapper mapper,
-            ILogger<CreateCustomerCommandHandler> logger)
+            ILogger<CreateCustomerCommandHandler> logger,
+            ILogService logService)
         {
             _customerRepositoy = customerRepositoy;
             _mapper = mapper;
             _logger = logger;
+            _logService = logService;
         }
 
         public async Task<CustomerDto> Handle(CreateCustomerCommand request, CancellationToken cancellationToken)
@@ -51,7 +52,7 @@ namespace Business.Customers.Handlers
                     {
                         CustomerName = request.Name
                     });
-                    throw new InvalidOperationException("El nombre del cliente no puede estar vacío");
+                    return new CustomerDto () { Messages = "El nombre del cliente no puede estar vacío" };
                 }
 
                 // Validar que no exista un customer con el mismo nombre
@@ -63,7 +64,7 @@ namespace Business.Customers.Handlers
                         CustomerName = request.Name,
                         ExistingCustomerId = existingCustomer.CustomerId
                     });
-                    throw new InvalidOperationException($"Ya existe un cliente con el nombre '{request.Name}'");
+                    return new CustomerDto() { Messages = $"Ya existe un cliente con el nombre '{request.Name}'" };
                 }
 
                 // Crear el nuevo customer usando AutoMapper
@@ -95,6 +96,15 @@ namespace Business.Customers.Handlers
                 {
                     CustomerName = request.Name
                 });
+                await _logService.CreateLog(new Domain.Entities.Logs
+                {
+                    Message = ex.Message,
+                    Level = "Error",
+                    TimeStamp = DateTime.UtcNow,
+                    Properties = $"",
+                    Exception = ex.GetType().Name,
+                    MessageTemplate = ex.Source.ToString()
+                }, cancellationToken);
                 throw;
             }
         }

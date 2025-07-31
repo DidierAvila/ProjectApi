@@ -3,7 +3,8 @@ namespace Domain.Dtos
     public class CustomerDto
     {
         public int CustomerId { get; set; }
-        public required string Name { get; set; }
+        public string? Name { get; set; }
+        public string? Messages { get; set; }
     }
 
     public class CreateCustomerDto

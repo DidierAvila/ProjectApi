@@ -1,5 +1,6 @@
 using AutoMapper;
 using Business.Common;
+using Business.Logs;
 using Business.Posts.Commands;
 using DataAccess.Repositories;
 using Domain.Dtos;
@@ -14,17 +15,21 @@ namespace Business.Posts.Handlers
         private readonly ICustomerRepositoy _customerRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<CreatePostCommandHandler> _logger;
+        private readonly ILogService _logService;
+
 
         public CreatePostCommandHandler(
             IPostRepository postRepository, 
             ICustomerRepositoy customerRepository, 
             IMapper mapper,
-            ILogger<CreatePostCommandHandler> logger)
+            ILogger<CreatePostCommandHandler> logger,
+            ILogService logService)
         {
             _postRepository = postRepository;
             _customerRepository = customerRepository;
             _mapper = mapper;
             _logger = logger;
+            _logService = logService;
         }
 
         public async Task<PostDto> Handle(CreatePostCommand request, CancellationToken cancellationToken)
@@ -64,7 +69,7 @@ namespace Business.Posts.Handlers
                     {
                         CustomerId = request.CustomerId
                     });
-                    throw new InvalidOperationException($"No se encontró el cliente con ID {request.CustomerId}");
+                    return new PostDto() { Messages = $"No se encontró el cliente con ID {request.CustomerId}" };
                 }
 
                 // Validar campos requeridos
@@ -74,7 +79,7 @@ namespace Business.Posts.Handlers
                     {
                         PostTitle = request.Title
                     });
-                    throw new InvalidOperationException("El título del post no puede estar vacío");
+                    return new PostDto() { Messages = "El título del post no puede estar vacío" };
                 }
 
                 if (string.IsNullOrWhiteSpace(request.Body))
@@ -83,7 +88,7 @@ namespace Business.Posts.Handlers
                     {
                         PostBody = request.Body
                     });
-                    throw new InvalidOperationException("El contenido del post no puede estar vacío");
+                    return new PostDto() { Messages = "El contenido del post no puede estar vacío" };
                 }
 
                 // Crear el post usando AutoMapper
@@ -157,6 +162,15 @@ namespace Business.Posts.Handlers
                     CustomerId = request.CustomerId,
                     PostType = request.Type
                 });
+                await _logService.CreateLog(new Domain.Entities.Logs
+                {
+                    Message = ex.Message,
+                    Level = "Error",
+                    TimeStamp = DateTime.UtcNow,
+                    Properties = $"",
+                    Exception = ex.GetType().Name,
+                    MessageTemplate = ex.Source.ToString()
+                }, cancellationToken);
                 throw;
             }
         }

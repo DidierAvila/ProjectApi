@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using AutoMapper;
 using Business.Customers.Queries;
 using DataAccess.Repositories;
@@ -11,18 +8,18 @@ namespace Business.Customers.Handlers
 {
     public class GetCustomerPostsQueryHandler : IRequestHandler<GetCustomerPostsQuery, IEnumerable<PostDto>>
     {
-        private readonly ICustomerRepositoy _customerRepositoy;
+        private readonly IPostRepository _postRepository;
         private readonly IMapper _mapper;
 
-        public GetCustomerPostsQueryHandler(ICustomerRepositoy customerRepositoy, IMapper mapper)
+        public GetCustomerPostsQueryHandler(IMapper mapper, IPostRepository postRepository)
         {
-            _customerRepositoy = customerRepositoy;
             _mapper = mapper;
+            _postRepository = postRepository;
         }
 
         public async Task<IEnumerable<PostDto>> Handle(GetCustomerPostsQuery request, CancellationToken cancellationToken)
         {
-            PostDto posts = new(); //await _customerRepositoy.GetPostsByCustomerId(request.CustomerId, cancellationToken);
+            var posts = await _postRepository.GetPostsByCustomerId(request.CustomerId, cancellationToken);
             return _mapper.Map<IEnumerable<PostDto>>(posts);
         }
     }

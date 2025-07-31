@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Business.Posts.Commands;
 using Business.Posts.Queries;
@@ -53,6 +54,10 @@ namespace API.Controllers.Post
             }
 
             var createdPost = await _mediator.Send(command);
+            if (!string.IsNullOrEmpty(createdPost.Messages))
+            {
+                return BadRequest(createdPost.Messages);
+            }
             return CreatedAtAction(nameof(GetById), new { id = createdPost.PostId }, createdPost);
         }
 
@@ -66,6 +71,10 @@ namespace API.Controllers.Post
             }
 
             var createdPosts = await _mediator.Send(command);
+            if (createdPosts.Select(x => x.Messages).Any())
+            {
+                return BadRequest(createdPosts.Select(x => x.Messages).FirstOrDefault());
+            }
             return CreatedAtAction(nameof(GetAll), createdPosts);
         }
 
@@ -84,6 +93,10 @@ namespace API.Controllers.Post
             }
 
             var updatedPost = await _mediator.Send(command);
+            if (!string.IsNullOrEmpty(updatedPost.Messages))
+            {
+                return BadRequest(updatedPost.Messages);
+            }
             return Ok(updatedPost);
         }
 

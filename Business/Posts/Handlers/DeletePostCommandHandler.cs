@@ -1,6 +1,3 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Business.Posts.Commands;
 using DataAccess.Repositories;
 using MediatR;

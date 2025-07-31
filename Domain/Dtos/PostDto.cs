@@ -8,6 +8,7 @@ namespace Domain.Dtos
         public int Type { get; set; }
         public string? Category { get; set; }
         public int CustomerId { get; set; }
+        public string? Messages { get; set; }
     }
 
     public class CreatePostDto
