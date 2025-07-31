@@ -2,7 +2,7 @@
 
 ## 📋 Descripción
 
-ProjectAPI es un microservicio desarrollado en .NET que proporciona APIs RESTful para la gestión de clientes (customers) y publicaciones (posts). El proyecto implementa una arquitectura limpia con separación de responsabilidades y utiliza patrones como CQRS con MediatR.
+ProjectAPI es un microservicio moderno desarrollado en **.NET 8.0** que proporciona APIs RESTful para la gestión de clientes (customers) y publicaciones (posts). El proyecto implementa una **arquitectura limpia** con separación de responsabilidades, utiliza patrones como **CQRS con MediatR**, y está completamente containerizado con **Docker**.
 
 ## 🏗️ Arquitectura
 
@@ -10,20 +10,20 @@ El proyecto sigue una arquitectura en capas con los siguientes componentes:
 
 ```
 ProjectAPI/
-├── API/                    # Capa de presentación (Controllers, Middleware)
+├── API/                    # Capa de presentación (Controllers, Middleware, Auth)
 ├── Business/              # Lógica de negocio (Commands, Queries, Handlers)
-├── DataAccess/           # Acceso a datos (Repositories, DbContext)
-├── Domain/               # Entidades de dominio y DTOs
-└── TestApi/              # Pruebas unitarias e integración
+├── DataAccess/           # Acceso a datos (Repositories, DbContext, Migrations)
+├── Domain/               # Entidades de dominio, DTOs y validadores
+└── TestApi/              # Pruebas unitarias e integración (xUnit)
 ```
 
 ### Capas del Sistema
 
-- **API**: Controladores REST, middleware personalizado y configuración de la aplicación
-- **Business**: Implementación de CQRS con MediatR, validaciones de negocio
-- **DataAccess**: Repositorios, Entity Framework DbContext
-- **Domain**: Entidades, DTOs, enums y validadores
-- **TestApi**: Pruebas automatizadas
+- **API**: Controladores REST, middleware personalizado, autenticación JWT y configuración
+- **Business**: Implementación de CQRS con MediatR, validaciones de negocio y handlers
+- **DataAccess**: Repositorios, Entity Framework DbContext y migraciones
+- **Domain**: Entidades, DTOs, enums y validadores con FluentValidation
+- **TestApi**: Pruebas automatizadas con xUnit, Moq y FluentAssertions
 
 ## 🚀 Características Principales
 
@@ -44,6 +44,11 @@ ProjectAPI/
 - ✅ Eliminar posts
 - ✅ Obtener posts por cliente
 
+### Seguridad y Autenticación
+- ✅ **Autenticación JWT** implementada
+- ✅ Endpoints protegidos
+- ✅ Configuración de tokens segura
+
 ### Validaciones Implementadas
 - **Clientes únicos**: No se permiten clientes con el mismo nombre
 - **Validación de usuario**: Verificación de existencia del cliente antes de crear posts
@@ -56,41 +61,103 @@ ProjectAPI/
 
 ## 🛠️ Tecnologías Utilizadas
 
-- **.NET 6/7**: Framework principal
+### Backend
+- **.NET 8.0**: Framework principal
 - **ASP.NET Core**: Web API
-- **Entity Framework Core**: ORM para acceso a datos
+- **Entity Framework Core 8.0**: ORM para acceso a datos
 - **SQL Server**: Base de datos
-- **MediatR**: Patrón CQRS y mediador
+- **MediatR 13.0**: Patrón CQRS y mediador
+- **AutoMapper 12.0**: Mapeo de objetos
+- **FluentValidation**: Validaciones robustas
 - **Serilog**: Logging estructurado
-- **FluentValidation**: Validaciones (si está implementado)
+
+### Seguridad
+- **JWT Authentication**: Autenticación basada en tokens
+- **HTTPS**: Comunicación segura
+
+### Containerización y DevOps
+- **Docker**: Containerización multi-stage
+- **Docker Compose**: Orquestación de servicios
+- **SQL Server 2022**: Base de datos containerizada
+
+### Testing
+- **xUnit**: Framework de pruebas
+- **Moq**: Mocking framework
+- **FluentAssertions**: Assertions fluidas
+- **Coverlet**: Cobertura de código
 
 ## 📦 Prerrequisitos
 
-- .NET 6.0 SDK o superior
+### Opción 1: Desarrollo Local
+- .NET 8.0 SDK o superior
 - SQL Server LocalDB o SQL Server Express
 - Visual Studio 2022 o VS Code
 
-## ⚙️ Configuración
+### Opción 2: Docker (Recomendado)
+- Docker Desktop
+- Docker Compose
 
-### 1. Clonar el Repositorio
+## ⚙️ Configuración y Ejecución
+
+### 🐳 Opción 1: Usando Docker (Recomendado)
+
+#### 1. Clonar el Repositorio
 ```bash
 git clone [URL_DEL_REPOSITORIO]
 cd ProjectAPI
 ```
 
-### 2. Configurar Base de Datos
+#### 2. Ejecutar con Docker Compose
+```bash
+# Construir y ejecutar todos los servicios
+docker-compose up --build
 
-#### Opción A: Restaurar desde Backup
+# Ejecutar en segundo plano
+docker-compose up -d --build
+```
+
+La aplicación estará disponible en:
+- **API**: `http://localhost:8080`
+- **SQL Server**: `localhost:1433`
+
+#### 3. Verificar el Estado
+```bash
+# Ver logs
+docker-compose logs -f projectapi
+
+# Ver contenedores en ejecución
+docker-compose ps
+```
+
+#### 4. Detener los Servicios
+```bash
+docker-compose down
+
+# Eliminar volúmenes (datos de BD)
+docker-compose down -v
+```
+
+### 💻 Opción 2: Desarrollo Local
+
+#### 1. Clonar el Repositorio
+```bash
+git clone [URL_DEL_REPOSITORIO]
+cd ProjectAPI
+```
+
+#### 2. Configurar Base de Datos
+
+**Opción A: Restaurar desde Backup**
 ```bash
 # Restaurar el archivo JujuTests.bak en SQL Server Management Studio
 ```
 
-#### Opción B: Ejecutar Script SQL
+**Opción B: Ejecutar Script SQL**
 ```bash
 # Ejecutar el archivo JujuTests.Script.sql en tu instancia de SQL Server
 ```
 
-### 3. Configurar Cadena de Conexión
+#### 3. Configurar Cadena de Conexión
 
 Editar `appsettings.json` en el proyecto API:
 
@@ -102,24 +169,15 @@ Editar `appsettings.json` en el proyecto API:
 }
 ```
 
-### 4. Restaurar Dependencias
+#### 4. Restaurar Dependencias y Ejecutar
 ```bash
+# Restaurar paquetes NuGet
 dotnet restore
-```
 
-### 5. Ejecutar Migraciones (si es necesario)
-```bash
+# Ejecutar migraciones (si es necesario)
 dotnet ef database update --project DataAccess --startup-project API
-```
 
-## 🚀 Ejecución
-
-### Desde Visual Studio
-1. Establecer `API` como proyecto de inicio
-2. Presionar F5 o Ctrl+F5
-
-### Desde Línea de Comandos
-```bash
+# Ejecutar la aplicación
 cd API
 dotnet run
 ```
@@ -130,34 +188,53 @@ La aplicación estará disponible en:
 
 ## 📚 API Endpoints
 
-### Customers
-
+### 🔐 Autenticación
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| GET | `/Customer` | Obtener todos los clientes |
-| GET | `/Customer/{id}` | Obtener cliente por ID |
-| POST | `/Customer` | Crear nuevo cliente |
-| PUT | `/Customer/{id}` | Actualizar cliente |
-| DELETE | `/Customer/{id}` | Eliminar cliente |
-| GET | `/Customer/{id}/posts` | Obtener posts del cliente |
+| POST | `/Security/login` | Autenticación y obtención de JWT token |
 
-### Posts
+### 👥 Customers
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| GET | `/Customer` | Obtener todos los clientes | ✅ |
+| GET | `/Customer/{id}` | Obtener cliente por ID | ✅ |
+| POST | `/Customer` | Crear nuevo cliente | ✅ |
+| PUT | `/Customer/{id}` | Actualizar cliente | ✅ |
+| DELETE | `/Customer/{id}` | Eliminar cliente | ✅ |
+| GET | `/Customer/{id}/posts` | Obtener posts del cliente | ✅ |
 
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | `/Post` | Obtener todos los posts |
-| GET | `/Post/{id}` | Obtener post por ID |
-| POST | `/Post` | Crear nuevo post |
-| POST | `/Post/multiple` | Crear múltiples posts |
-| PUT | `/Post/{id}` | Actualizar post |
-| DELETE | `/Post/{id}` | Eliminar post |
-| GET | `/Post/customer/{customerId}` | Obtener posts por cliente |
+### 📝 Posts
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| GET | `/Post` | Obtener todos los posts | ✅ |
+| GET | `/Post/{id}` | Obtener post por ID | ✅ |
+| POST | `/Post` | Crear nuevo post | ✅ |
+| POST | `/Post/multiple` | Crear múltiples posts | ✅ |
+| PUT | `/Post/{id}` | Actualizar post | ✅ |
+| DELETE | `/Post/{id}` | Eliminar post | ✅ |
+| GET | `/Post/customer/{customerId}` | Obtener posts por cliente | ✅ |
 
 ## 📝 Ejemplos de Uso
+
+### Autenticación
+```json
+POST /Security/login
+{
+  "username": "admin",
+  "password": "password"
+}
+
+Response:
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expiration": "2024-01-01T12:00:00Z"
+}
+```
 
 ### Crear Cliente
 ```json
 POST /Customer
+Authorization: Bearer {token}
 {
   "name": "Juan Pérez"
 }
@@ -166,6 +243,7 @@ POST /Customer
 ### Crear Post
 ```json
 POST /Post
+Authorization: Bearer {token}
 {
   "title": "Mi primer post",
   "body": "Este es el contenido del post que será validado automáticamente",
@@ -177,6 +255,7 @@ POST /Post
 ### Crear Múltiples Posts
 ```json
 POST /Post/multiple
+Authorization: Bearer {token}
 {
   "posts": [
     {
@@ -199,32 +278,96 @@ POST /Post/multiple
 
 ### Ejecutar Pruebas
 ```bash
+# Todas las pruebas
 dotnet test
-```
 
-### Ejecutar Pruebas con Cobertura
-```bash
+# Con cobertura de código
 dotnet test --collect:"XPlat Code Coverage"
+
+# Pruebas específicas por proyecto
+dotnet test TestApi/TestApi.csproj
 ```
 
-## 📊 Logging
+### Estructura de Pruebas
+```
+TestApi/
+├── Customers/          # Pruebas de lógica de customers
+├── Posts/             # Pruebas de lógica de posts
+└── TestApi.csproj     # Configuración con xUnit, Moq, FluentAssertions
+```
 
-El sistema utiliza Serilog para logging estructurado:
+## 📊 Logging y Monitoreo
 
+El sistema utiliza **Serilog** para logging estructurado:
+
+### Configuración de Logs
 - **Consola**: Logs en tiempo real durante desarrollo
-- **Archivo**: Logs diarios en la carpeta `logs/`
+- **Archivo**: Logs diarios en la carpeta `logs/` (Docker volume)
 - **Base de datos**: Logs almacenados en tabla `Logs` (SQL Server)
+
+### Niveles de Log
+- **Warning**: Nivel mínimo configurado
+- **Error**: Errores de aplicación
+- **Information**: Información general
+- **Debug**: Información detallada (desarrollo)
+
+## 🐳 Docker Configuration
+
+### Dockerfile Features
+- **Multi-stage build**: Optimización del tamaño de imagen
+- **Non-root user**: Seguridad mejorada
+- **Health checks**: Monitoreo de salud del contenedor
+- **.NET 8.0 Runtime**: Imagen optimizada para producción
+
+### Docker Compose Services
+- **projectapi**: Aplicación principal (Puerto 8080)
+- **sqlserver**: SQL Server 2022 Express (Puerto 1433)
+- **Volumes**: Persistencia de datos y logs
+- **Networks**: Red aislada para comunicación segura
 
 ## 🔧 Mejoras Implementadas
 
-1. **Validaciones de negocio robustas**
-2. **Manejo de errores centralizado con middleware**
-3. **Logging estructurado con Serilog**
-4. **Arquitectura CQRS con MediatR**
-5. **Separación clara de responsabilidades**
-6. **Eliminación en cascada para integridad referencial**
-7. **API para creación masiva de posts**
-8. **Validación automática de modelos**
+### Arquitectura y Patrones
+1. **Arquitectura limpia** con separación de responsabilidades
+2. **CQRS con MediatR** para separar comandos y consultas
+3. **Repository Pattern** para abstracción del acceso a datos
+4. **Dependency Injection** nativo de .NET
+5. **AutoMapper** para mapeo automático de DTOs
+
+### Seguridad
+6. **Autenticación JWT** implementada
+7. **Middleware de manejo de errores** centralizado
+8. **Validaciones robustas** con FluentValidation
+9. **HTTPS** configurado por defecto
+
+### DevOps y Deployment
+10. **Containerización completa** con Docker
+11. **Docker Compose** para orquestación
+12. **Multi-stage builds** para optimización
+13. **Logging estructurado** con Serilog
+
+### Calidad de Código
+14. **Pruebas unitarias** con xUnit
+15. **Mocking** con Moq para pruebas aisladas
+16. **Cobertura de código** con Coverlet
+17. **Eliminación en cascada** para integridad referencial
+
+## 🚀 Deployment en Producción
+
+### Variables de Entorno
+```bash
+# Configurar en producción
+ASPNETCORE_ENVIRONMENT=Production
+ASPNETCORE_URLS=http://+:8080
+ConnectionStrings__DefaultConnection="Server=sqlserver;Database=JujuTests;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;"
+```
+
+### Consideraciones de Seguridad
+- Cambiar contraseñas por defecto
+- Configurar certificados SSL/TLS
+- Implementar rate limiting
+- Configurar CORS apropiadamente
+- Usar secrets management
 
 ## 🤝 Contribución
 
@@ -233,6 +376,12 @@ El sistema utiliza Serilog para logging estructurado:
 3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abrir un Pull Request
+
+### Estándares de Código
+- Seguir las convenciones de C# y .NET
+- Escribir pruebas para nuevas funcionalidades
+- Mantener cobertura de código > 80%
+- Documentar APIs con XML comments
 
 ## 📄 Licencia
 
@@ -248,7 +397,7 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE.md](LICENSE.m
 
 ---
 
-## 🔍 Notas Técnicas
+## 🔍 Información Técnica
 
 ### Estructura de Base de Datos
 
@@ -256,7 +405,7 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE.md](LICENSE.m
 -- Tabla Customer
 Customer (
     CustomerId INT IDENTITY(1,1) PRIMARY KEY,
-    Name NVARCHAR(255) NOT NULL
+    Name NVARCHAR(255) NOT NULL UNIQUE
 )
 
 -- Tabla Post
@@ -266,18 +415,71 @@ Post (
     Body NVARCHAR(MAX),
     Type INT,
     Category NVARCHAR(100),
-    CustomerId INT FOREIGN KEY REFERENCES Customer(CustomerId)
+    CustomerId INT FOREIGN KEY REFERENCES Customer(CustomerId) ON DELETE CASCADE
+)
+
+-- Tabla Logs (Serilog)
+Logs (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Message NVARCHAR(MAX),
+    Level NVARCHAR(128),
+    TimeStamp DATETIME,
+    Exception NVARCHAR(MAX),
+    Properties NVARCHAR(MAX)
 )
 ```
 
-### Patrones Implementados
+### Patrones y Principios Implementados
 
-- **Repository Pattern**: Para abstracción del acceso a datos
+- **Clean Architecture**: Separación de capas y dependencias
+- **SOLID Principles**: Principios de diseño orientado a objetos
 - **CQRS**: Separación de comandos y consultas
-- **Mediator Pattern**: Desacoplamiento de controladores y lógica de negocio
+- **Mediator Pattern**: Desacoplamiento con MediatR
+- **Repository Pattern**: Abstracción del acceso a datos
 - **Dependency Injection**: Inversión de control
-- **Clean Architecture**: Separación de capas y responsabilidades
+- **Unit of Work**: Transacciones y consistencia
+
+### Tecnologías de Desarrollo
+
+| Categoría | Tecnología | Versión |
+|-----------|------------|---------|
+| Framework | .NET | 8.0 |
+| Web API | ASP.NET Core | 8.0 |
+| ORM | Entity Framework Core | 8.0.18 |
+| Database | SQL Server | 2022 |
+| Mediator | MediatR | 13.0.0 |
+| Mapping | AutoMapper | 12.0.1 |
+| Validation | FluentValidation | 11.3.0 |
+| Logging | Serilog | 2.10.0 |
+| Testing | xUnit | 2.5.3 |
+| Mocking | Moq | 4.20.70 |
+| Container | Docker | Latest |
 
 ---
 
-*Desarrollado con ❤️ para Post Ltda.*
+## 🎯 Roadmap Futuro
+
+### Próximas Funcionalidades
+- [ ] **API Versioning**: Versionado de APIs
+- [ ] **Swagger/OpenAPI**: Documentación interactiva mejorada
+- [ ] **Rate Limiting**: Control de velocidad de requests
+- [ ] **Caching**: Implementación de Redis
+- [ ] **Health Checks**: Endpoints de salud detallados
+- [ ] **Metrics**: Integración con Prometheus/Grafana
+- [ ] **CRUD Avanzado**: Filtros, paginación y ordenamiento
+- [ ] **Notificaciones**: Sistema de eventos y notificaciones
+
+### Mejoras Técnicas
+- [ ] **Integration Tests**: Pruebas de integración completas
+- [ ] **Performance Tests**: Pruebas de carga y rendimiento
+- [ ] **CI/CD Pipeline**: Integración y despliegue continuo
+- [ ] **Infrastructure as Code**: Terraform/ARM templates
+- [ ] **Kubernetes**: Orquestación avanzada de contenedores
+
+---
+
+*Desarrollado con ❤️ por el equipo de Post Ltda.*
+
+**Última actualización:** Diciembre 2024  
+**Versión del proyecto:** 2.0.0  
+**Compatibilidad:** .NET 8.0+
