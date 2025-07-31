@@ -1,0 +1,76 @@
+# Archivos y directorios a ignorar en el contexto de Docker
+
+# Archivos de compilación y salida
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# Archivos de Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Archivos de NuGet
+*.nupkg
+**/packages/*
+!**/packages/build/
+
+# Archivos de pruebas
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Archivos de logs
+logs/
+*.log
+
+# Archivos de base de datos local
+*.mdf
+*.ldf
+*.sqlite
+*.db
+
+# Archivos de respaldo
+*.bak
+*.backup
+
+# Archivos de configuración local
+appsettings.Local.json
+appsettings.Development.json
+
+# Archivos de Git
+.git/
+.gitignore
+.gitattributes
+
+# Archivos de Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de Node.js (si los hay)
+node_modules/
+npm-debug.log*
+
+# Archivos temporales
+*.tmp
+*.temp
+
+# Documentación
+README.md
+*.md
+
+# Archivos de certificados
+*.pfx
+*.p12
+*.crt
+*.key

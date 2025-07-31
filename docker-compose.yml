@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Aplicación API
+  projectapi:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: projectapi-app
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=JujuTests;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;
+    depends_on:
+      - sqlserver
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - projectapi-network
+    restart: unless-stopped
+
+  # Base de datos SQL Server
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: projectapi-sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd
+      - MSSQL_PID=Express
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./JujuTests.Script.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - projectapi-network
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:
+    driver: local
+
+networks:
+  projectapi-network:
+    driver: bridge
