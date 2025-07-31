@@ -1,5 +1,8 @@
 ﻿using Business.Customers.Queries;
 using Business.Posts.Queries;
+using Business.Security;
+using DataAccess.Repositories;
+using Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace API.Extensions
@@ -17,6 +20,10 @@ namespace API.Extensions
             services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(GetAllPostsQuery).Assembly));
             services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(GetPostByIdQuery).Assembly));
             services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(GetPostsByCustomerIdQuery).Assembly));
+
+            services.AddScoped<ISecurityService, SecurityService>();
+            services.AddScoped<IRepositoryBase<Token>, RepositoryBase<Token>>();
+            services.AddScoped<IRepositoryBase<User>, RepositoryBase<User>>();
 
             return services;
         }

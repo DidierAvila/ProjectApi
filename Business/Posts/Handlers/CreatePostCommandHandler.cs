@@ -1,14 +1,9 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using AutoMapper;
 using Business.Common;
 using Business.Posts.Commands;
 using DataAccess.Repositories;
 using Domain.Dtos;
-using Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Business.Posts.Handlers

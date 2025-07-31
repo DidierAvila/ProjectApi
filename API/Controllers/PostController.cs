@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Business.Posts.Commands;
 using Business.Posts.Queries;
 using Domain.Dtos;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers.Post
@@ -20,6 +20,7 @@ namespace API.Controllers.Post
         }
 
         [HttpGet()]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<IEnumerable<PostDto>>> GetAll()
         {
             var query = new GetAllPostsQuery();
@@ -28,6 +29,7 @@ namespace API.Controllers.Post
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<PostDto>> GetById(int id)
         {
             var query = new GetPostByIdQuery { PostId = id };
@@ -42,6 +44,7 @@ namespace API.Controllers.Post
         }
 
         [HttpPost()]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<PostDto>> Create([FromBody] CreatePostCommand command)
         {
             if (!ModelState.IsValid)
@@ -54,6 +57,7 @@ namespace API.Controllers.Post
         }
 
         [HttpPost("multiple")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<IEnumerable<PostDto>>> CreateMultiple([FromBody] CreateMultiplePostsCommand command)
         {
             if (!ModelState.IsValid)
@@ -66,6 +70,7 @@ namespace API.Controllers.Post
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<PostDto>> Update(int id, [FromBody] UpdatePostCommand command)
         {
             if (id != command.PostId)
@@ -83,6 +88,7 @@ namespace API.Controllers.Post
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> Delete(int id)
         {
             var command = new DeletePostCommand { PostId = id };
@@ -91,6 +97,7 @@ namespace API.Controllers.Post
         }
 
         [HttpGet("customer/{customerId}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<IEnumerable<PostDto>>> GetByCustomerId(int customerId)
         {
             var query = new GetPostsByCustomerIdQuery { CustomerId = customerId };

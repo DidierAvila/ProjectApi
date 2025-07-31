@@ -13,11 +13,40 @@ namespace DataAccess.DbContexts
         public virtual DbSet<Customer> Customer { get; set; }
         public virtual DbSet<Logs> Logs { get; set; }
         public virtual DbSet<Post> Post { get; set; }
+        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<Token> Tokens { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Configuración de User
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.ToTable("User");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.Name).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.LastName).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.Email).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Password).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.Role).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.Phone).HasMaxLength(20);
+            });
+
+            // Configuración de Token
+            modelBuilder.Entity<Token>(entity =>
+            {
+                entity.ToTable("Token");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.TokenValue).HasMaxLength(500).IsRequired();
+                entity.Property(e => e.Id).IsRequired();
+                entity.Property(e => e.ExpirationDate).IsRequired();
+                entity.Property(e => e.CreatedDate).IsRequired();
+                entity.Property(e => e.Status).IsRequired();
+            });
+
             // Configuración de Customer
             modelBuilder.Entity<Customer>(entity =>
             {

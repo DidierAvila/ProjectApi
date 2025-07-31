@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Business.Customers.Commands;
 using Business.Customers.Queries;
 using Domain.Dtos;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers.Customer
 {
+    [ApiController]
     [Route("[controller]")]
     public class CustomerController : ControllerBase
     {
@@ -28,6 +29,7 @@ namespace API.Controllers.Customer
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "user")]
         public async Task<ActionResult<CustomerDto>> GetById(int id)
         {
             var query = new GetCustomerByIdQuery { CustomerId = id };
@@ -42,6 +44,7 @@ namespace API.Controllers.Customer
         }
 
         [HttpPost()]
+        [Authorize(Roles = "user")]
         public async Task<ActionResult<CustomerDto>> Create([FromBody] CreateCustomerDto createDto)
         {
             if (!ModelState.IsValid)
@@ -58,6 +61,7 @@ namespace API.Controllers.Customer
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "user")]
         public async Task<ActionResult<CustomerDto>> Update(int id, [FromBody] UpdateCustomerDto updateDto)
         {
             if (id != updateDto.CustomerId)
@@ -80,6 +84,7 @@ namespace API.Controllers.Customer
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "user")]
         public async Task<ActionResult> Delete(int id)
         {
             var command = new DeleteCustomerCommand { CustomerId = id };
@@ -88,6 +93,7 @@ namespace API.Controllers.Customer
         }
 
         [HttpGet("{id}/posts")]
+        [Authorize(Roles = "user")]
         public async Task<ActionResult<IEnumerable<PostDto>>> GetCustomerPosts(int id)
         {
             var query = new GetCustomerPostsQuery { CustomerId = id };
