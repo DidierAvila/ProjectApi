@@ -59,6 +59,15 @@ ProjectAPI/
   - Type 3 → "Futbol"
   - Otros → Categoría personalizada
 
+### 🚫 Sistema de Cancelación
+- **Estados de entidad**: Active (1), Cancelled (2), Inactive (3)
+- **Cancelación soft**: Los registros se marcan como cancelados, no se eliminan
+- **Validaciones de cancelación**:
+  - Verificación de existencia de la entidad
+  - Prevención de cancelación doble
+  - Mantenimiento de integridad referencial
+- **Trazabilidad completa**: Logs detallados de todas las operaciones de cancelación
+
 ## 🛠️ Tecnologías Utilizadas
 
 ### Backend
@@ -201,6 +210,7 @@ La aplicación estará disponible en:
 | POST | `/Customer` | Crear nuevo cliente | ✅ |
 | PUT | `/Customer/{id}` | Actualizar cliente | ✅ |
 | DELETE | `/Customer/{id}` | Eliminar cliente | ✅ |
+| PUT | `/Customer/{id}/cancel` | **Cancelar cliente** | ✅ |
 | GET | `/Customer/{id}/posts` | Obtener posts del cliente | ✅ |
 
 ### 📝 Posts
@@ -212,6 +222,7 @@ La aplicación estará disponible en:
 | POST | `/Post/multiple` | Crear múltiples posts | ✅ |
 | PUT | `/Post/{id}` | Actualizar post | ✅ |
 | DELETE | `/Post/{id}` | Eliminar post | ✅ |
+| PUT | `/Post/{id}/cancel` | **Cancelar post** | ✅ |
 | GET | `/Post/customer/{customerId}` | Obtener posts por cliente | ✅ |
 
 ## 📝 Ejemplos de Uso
@@ -271,6 +282,34 @@ Authorization: Bearer {token}
       "customerId": 1
     }
   ]
+}
+```
+
+### 🚫 Cancelar Cliente
+```json
+PUT /Customer/{id}/cancel
+Authorization: Bearer {token}
+
+Response:
+{
+  "customerId": 1,
+  "name": "Juan Pérez",
+  "status": 2  // 2 = Cancelled
+}
+```
+
+### 🚫 Cancelar Post
+```json
+PUT /Post/{id}/cancel
+Authorization: Bearer {token}
+
+Response:
+{
+  "postId": 1,
+  "title": "Mi primer post",
+  "body": "Este es el contenido del post...",
+  "status": 2,  // 2 = Cancelled
+  "customerId": 1
 }
 ```
 
