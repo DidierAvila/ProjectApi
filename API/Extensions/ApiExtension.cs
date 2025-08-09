@@ -24,6 +24,7 @@ namespace API.Extensions
 
             services.AddScoped<ISecurityService, SecurityService>();
             services.AddScoped<ILogService, LogService>();
+            services.AddScoped<ILogsRepository, LogsRepository>();
             services.AddScoped<IRepositoryBase<Token>, RepositoryBase<Token>>();
             services.AddScoped<IRepositoryBase<User>, RepositoryBase<User>>();
             services.AddScoped<IRepositoryBase<Logs>, RepositoryBase<Logs>>();

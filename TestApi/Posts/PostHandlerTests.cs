@@ -1,4 +1,5 @@
 using AutoMapper;
+using Business.Logs;
 using Business.Posts.Commands;
 using Business.Posts.Handlers;
 using DataAccess.Repositories;
@@ -16,11 +17,12 @@ namespace TestApi.Posts
         private readonly Mock<ICustomerRepositoy> _customerRepoMock = new();
         private readonly Mock<IMapper> _mapperMock = new();
         private readonly Mock<ILogger<CreatePostCommandHandler>> _loggerMock = new();
+        private readonly Mock<ILogService> _logServiceMock = new();
 
         [Fact]
         public async Task CreatePost_Success()
         {
-            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreatePostCommand { Title = "Test Post", Body = "Body", CustomerId = 1, Type = 1, Category = "Farándula" };
             _customerRepoMock.Setup(r => r.GetByID(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Customer { CustomerId = 1 });
             _mapperMock.Setup(m => m.Map<Post>(It.IsAny<CreatePostCommand>())).Returns(new Post { Title = "Test Post", Body = "Body", CustomerId = 1, Type = 1, Category = "Farándula" });
@@ -34,7 +36,7 @@ namespace TestApi.Posts
         [Fact]
         public async Task CreatePost_Fails_WhenCustomerNotFound()
         {
-            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreatePostCommand { Title = "Test Post", Body = "Body", CustomerId = 99 };
             _customerRepoMock.Setup(r => r.GetByID(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync((Customer)null!);
             await Assert.ThrowsAsync<System.InvalidOperationException>(() => handler.Handle(command, CancellationToken.None));
@@ -43,7 +45,7 @@ namespace TestApi.Posts
         [Fact]
         public async Task CreatePost_Fails_WhenTitleIsEmpty()
         {
-            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreatePostCommand { Title = "", Body = "Body", CustomerId = 1 };
             _customerRepoMock.Setup(r => r.GetByID(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Customer { CustomerId = 1 });
             await Assert.ThrowsAsync<System.InvalidOperationException>(() => handler.Handle(command, CancellationToken.None));
@@ -52,7 +54,7 @@ namespace TestApi.Posts
         [Fact]
         public async Task CreatePost_Fails_WhenBodyIsEmpty()
         {
-            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreatePostCommand { Title = "Test Post", Body = "", CustomerId = 1 };
             _customerRepoMock.Setup(r => r.GetByID(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Customer { CustomerId = 1 });
             await Assert.ThrowsAsync<System.InvalidOperationException>(() => handler.Handle(command, CancellationToken.None));
@@ -61,7 +63,7 @@ namespace TestApi.Posts
         [Fact]
         public async Task CreatePost_MapsCorrectly()
         {
-            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreatePostCommand { Title = "MapTest", Body = "Body", CustomerId = 1, Type = 2, Category = "Política" };
             _customerRepoMock.Setup(r => r.GetByID(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Customer { CustomerId = 1 });
             _mapperMock.Setup(m => m.Map<Post>(It.IsAny<CreatePostCommand>())).Returns(new Post { Title = "MapTest", Body = "Body", CustomerId = 1, Type = 2, Category = "Política" });
@@ -74,7 +76,7 @@ namespace TestApi.Posts
         [Fact]
         public async Task CreatePost_Throws_OnRepositoryException()
         {
-            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreatePostCommand { Title = "RepoError", Body = "Body", CustomerId = 1 };
             _customerRepoMock.Setup(r => r.GetByID(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Customer { CustomerId = 1 });
             _ = _mapperMock.Setup(m => m.Map<Post>(It.IsAny<CreatePostCommand>())).Returns(new Post { Title = "RepoError", Body = "Body", CustomerId = 1 });
@@ -85,7 +87,7 @@ namespace TestApi.Posts
         [Fact]
         public async Task CreatePost_ValidatesBodyTruncation()
         {
-            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var longBody = new string('a', 120);
             var command = new CreatePostCommand { Title = "Test Post", Body = longBody, CustomerId = 1, Type = 1, Category = "Farándula" };
             _customerRepoMock.Setup(r => r.GetByID(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Customer { CustomerId = 1 });
@@ -100,7 +102,7 @@ namespace TestApi.Posts
         [Fact]
         public async Task CreatePost_AutoAssignsCategory()
         {
-            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreatePostCommand { Title = "Test Post", Body = "Body", CustomerId = 1, Type = 2, Category = "" };
             _customerRepoMock.Setup(r => r.GetByID(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Customer { CustomerId = 1 });
             _mapperMock.Setup(m => m.Map<Post>(It.IsAny<CreatePostCommand>())).Returns(new Post { Title = "Test Post", Body = "Body", CustomerId = 1, Type = 2, Category = "" });
@@ -113,7 +115,7 @@ namespace TestApi.Posts
         [Fact]
         public async Task CreatePost_RepositoryCalledOnce()
         {
-            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreatePostCommand { Title = "RepoCall", Body = "Body", CustomerId = 1 };
             _customerRepoMock.Setup(r => r.GetByID(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Customer { CustomerId = 1 });
             _mapperMock.Setup(m => m.Map<Post>(It.IsAny<CreatePostCommand>())).Returns(new Post { Title = "RepoCall", Body = "Body", CustomerId = 1 });
@@ -126,7 +128,7 @@ namespace TestApi.Posts
         [Fact]
         public async Task CreatePost_Throws_OnMapperException()
         {
-            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreatePostCommandHandler(_postRepoMock.Object, _customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreatePostCommand { Title = "MapError", Body = "Body", CustomerId = 1 };
             _customerRepoMock.Setup(r => r.GetByID(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Customer { CustomerId = 1 });
             _mapperMock.Setup(m => m.Map<Post>(It.IsAny<CreatePostCommand>())).Throws(new System.Exception("Map error"));

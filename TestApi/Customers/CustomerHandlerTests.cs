@@ -1,6 +1,7 @@
 using AutoMapper;
 using Business.Customers.Commands;
 using Business.Customers.Handlers;
+using Business.Logs;
 using DataAccess.Repositories;
 using Domain.Dtos;
 using Domain.Entities;
@@ -15,11 +16,12 @@ namespace TestApi.Customers
         private readonly Mock<ICustomerRepositoy> _customerRepoMock = new();
         private readonly Mock<IMapper> _mapperMock = new();
         private readonly Mock<ILogger<CreateCustomerCommandHandler>> _loggerMock = new();
+        private readonly Mock<ILogService> _logServiceMock = new();
 
         [Fact]
         public async Task CreateCustomer_Success()
         {
-            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreateCustomerCommand { Name = "Test Customer" };
             _customerRepoMock.Setup(r => r.Find(It.IsAny<System.Linq.Expressions.Expression<System.Func<Customer, bool>>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Customer)null!);
             _mapperMock.Setup(m => m.Map<Customer>(It.IsAny<CreateCustomerCommand>())).Returns(new Customer { Name = "Test Customer" });
@@ -33,7 +35,7 @@ namespace TestApi.Customers
         [Fact]
         public async Task CreateCustomer_Fails_WhenNameExists()
         {
-            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreateCustomerCommand { Name = "Existing" };
             _customerRepoMock.Setup(r => r.Find(It.IsAny<System.Linq.Expressions.Expression<System.Func<Customer, bool>>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Customer { Name = "Existing" });
             await Assert.ThrowsAsync<System.InvalidOperationException>(() => handler.Handle(command, CancellationToken.None));
@@ -42,7 +44,7 @@ namespace TestApi.Customers
         [Fact]
         public async Task CreateCustomer_Fails_WhenNameIsEmpty()
         {
-            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreateCustomerCommand { Name = "" };
             await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command, CancellationToken.None));
         }
@@ -50,7 +52,7 @@ namespace TestApi.Customers
         [Fact]
         public async Task CreateCustomer_MapsCorrectly()
         {
-            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreateCustomerCommand { Name = "MapTest" };
             _customerRepoMock.Setup(r => r.Find(It.IsAny<System.Linq.Expressions.Expression<System.Func<Customer, bool>>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Customer)null!);
             _mapperMock.Setup(m => m.Map<Customer>(It.IsAny<CreateCustomerCommand>())).Returns(new Customer { Name = "MapTest" });
@@ -63,7 +65,7 @@ namespace TestApi.Customers
         [Fact]
         public async Task CreateCustomer_Throws_OnRepositoryException()
         {
-            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreateCustomerCommand { Name = "RepoError" };
             _customerRepoMock.Setup(r => r.Find(It.IsAny<System.Linq.Expressions.Expression<System.Func<Customer, bool>>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Customer)null!);
             _mapperMock.Setup(m => m.Map<Customer>(It.IsAny<CreateCustomerCommand>())).Returns(new Customer { Name = "RepoError" });
@@ -74,7 +76,7 @@ namespace TestApi.Customers
         [Fact]
         public async Task CreateCustomer_ValidatesNameIsTrimmed()
         {
-            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreateCustomerCommand { Name = "   Trimmed   " };
             _customerRepoMock.Setup(r => r.Find(It.IsAny<System.Linq.Expressions.Expression<System.Func<Customer, bool>>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Customer)null!);
             _mapperMock.Setup(m => m.Map<Customer>(It.IsAny<CreateCustomerCommand>())).Returns(new Customer { Name = "Trimmed" });
@@ -87,7 +89,7 @@ namespace TestApi.Customers
         [Fact]
         public async Task CreateCustomer_Throws_OnNullName()
         {
-            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreateCustomerCommand { Name = null! };
             await Assert.ThrowsAsync<System.InvalidOperationException>(() => handler.Handle(command, CancellationToken.None));
         }
@@ -95,7 +97,7 @@ namespace TestApi.Customers
         [Fact]
         public async Task CreateCustomer_RepositoryCalledOnce()
         {
-            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreateCustomerCommand { Name = "RepoCall" };
             _customerRepoMock.Setup(r => r.Find(It.IsAny<System.Linq.Expressions.Expression<System.Func<Customer, bool>>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Customer)null!);
             _mapperMock.Setup(m => m.Map<Customer>(It.IsAny<CreateCustomerCommand>())).Returns(new Customer { Name = "RepoCall" });
@@ -108,7 +110,7 @@ namespace TestApi.Customers
         [Fact]
         public async Task CreateCustomer_MapperCalled()
         {
-            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreateCustomerCommand { Name = "MapCall" };
             _customerRepoMock.Setup(r => r.Find(It.IsAny<System.Linq.Expressions.Expression<System.Func<Customer, bool>>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Customer)null!);
             _mapperMock.Setup(m => m.Map<Customer>(It.IsAny<CreateCustomerCommand>())).Returns(new Customer { Name = "MapCall" });
@@ -121,7 +123,7 @@ namespace TestApi.Customers
         [Fact]
         public async Task CreateCustomer_Throws_OnMapperException()
         {
-            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object);
+            var handler = new CreateCustomerCommandHandler(_customerRepoMock.Object, _mapperMock.Object, _loggerMock.Object, _logServiceMock.Object);
             var command = new CreateCustomerCommand { Name = "MapError" };
             _customerRepoMock.Setup(r => r.Find(It.IsAny<System.Linq.Expressions.Expression<System.Func<Customer, bool>>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Customer)null!);
             _mapperMock.Setup(m => m.Map<Customer>(It.IsAny<CreateCustomerCommand>())).Throws(new System.Exception("Map error"));
