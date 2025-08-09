@@ -1,9 +1,12 @@
+using Domain.Enums;
+
 namespace Domain.Dtos
 {
     public class CustomerDto
     {
         public int CustomerId { get; set; }
         public string? Name { get; set; }
+        public EntityStatus Status { get; set; }
         public string? Messages { get; set; }
     }
 

@@ -1,9 +1,12 @@
+using Domain.Enums;
+
 namespace Domain.Dtos
 {
     public class CustomerWithPostsDto
     {
         public int CustomerId { get; set; }
         public string Name { get; set; }
+        public EntityStatus Status { get; set; }
         public List<PostDto> Posts { get; set; } = new List<PostDto>();
     }
 
@@ -15,6 +18,7 @@ namespace Domain.Dtos
         public int Type { get; set; }
         public string Category { get; set; }
         public int CustomerId { get; set; }
+        public EntityStatus Status { get; set; }
         public CustomerDto Customer { get; set; }
     }
 

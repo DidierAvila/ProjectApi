@@ -112,5 +112,18 @@ namespace API.Controllers.Customer
             var posts = await _mediator.Send(query);
             return Ok(posts);
         }
+
+        [HttpPut("{id}/cancel")]
+        [Authorize(Roles = "user")]
+        public async Task<ActionResult<CustomerDto>> Cancel(int id)
+        {
+            var command = new CancelCustomerCommand { CustomerId = id };
+            var result = await _mediator.Send(command);
+            if (!string.IsNullOrEmpty(result.Messages))
+            {
+                return BadRequest(result.Messages);
+            }
+            return Ok(result);
+        }
     }
 }

@@ -1,3 +1,5 @@
+using Domain.Enums;
+
 namespace Domain.Dtos
 {
     public class PostDto
@@ -8,6 +10,7 @@ namespace Domain.Dtos
         public int Type { get; set; }
         public string? Category { get; set; }
         public int CustomerId { get; set; }
+        public EntityStatus Status { get; set; }
         public string? Messages { get; set; }
     }
 
